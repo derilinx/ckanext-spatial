@@ -245,7 +245,13 @@ class ISOResponsibleParty(ISOElement):
                     ],
                     multiplicity="0..1",
                 ),
-
+                ISOElement(
+                    name="phone",
+                    search_paths=[
+                        "gmd:phone/gmd:CI_Telephone/gmd:voice/gco:CharacterString/text()"
+                    ],
+                    multiplicity="0..1"
+                )
             ]
         ),
         ISOElement(
