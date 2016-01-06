@@ -882,6 +882,8 @@ class ISODocument(MappedXmlDocument):
         self.infer_date_updated(values)
         self.infer_date_created(values)
         self.infer_url(values)
+        self.infer_inspire_theme(values)
+        self.infer_mdr_theme(values)
         # Todo: Infer resources.
         self.infer_tags(values)
         self.infer_publisher(values)
@@ -896,6 +898,23 @@ class ISODocument(MappedXmlDocument):
                 value = date['value']
                 break
         values['date-released'] = value
+
+    def infer_inspire_theme(self, values):
+        inspire_themes = ['Addresses', 'Administrative units', 'Agricultural and aquaculture facilities', 'Area management/restriction/regulation zones and reporting units', 'Atmospheric conditions', 'Bio-geographical regions', 'Buildings', 'Cadastral parcels', 'Coordinate reference systems', 'Elevation', 'Energy resources', 'Environmental monitoring facilities', 'Geographical grid systems', 'Geographical names', 'Geology', 'Habitats and biotopes', 'Human health and safety', 'Hydrography', 'Land cover', 'Land use', 'Meteorological geographical features', 'Mineral resources', 'Natural risk zones', 'Oceanographic geographical features', 'Orthoimagery', 'Population distribution - demography', 'Production and industrial facilities', 'Protected sites', 'Sea regions', 'Soil', 'Species distribution', 'Statistical units', 'Transport networks', 'Utility and governmental services']
+        themes = [t.lower() for t in inspire_themes]
+        value = ''
+        for tag in values['keyword-inspire-theme']:
+            if tag.lower() in themes:
+                value = tag
+                break
+        values['inspire-theme'] = value
+
+    def infer_mdr_theme(self, values):
+        # from https://docs.google.com/spreadsheets/d/1gplql8sQgEkKBosSZo22O8BnUJiuoO1ok1uTVEATaTo/edit?pref=2&pli=1#gid=0
+        theme_map = { 'Addresses':'Government', 'Administrative units':'Government', 'Agricultural and aquaculture facilities':'Agriculture', 'Area management/restriction/regulation zones and reporting units':'Environment', 'Atmospheric conditions':'Environment', 'Bio-geographical regions':'Environment', 'Buildings':'Economy', 'Cadastral parcels':'Environment', 'Coordinate reference systems':'Science', 'Elevation':'Science', 'Energy resources':'Energy', 'Environmental monitoring facilities':'Environment', 'Geographical grid systems':'Science', 'Geographical names':'Government', 'Geology':'Science', 'Habitats and biotopes':'Environment', 'Human health and safety':'Health', 'Hydrography':'Environment', 'Land cover':'Environment', 'Land use':'Science', 'Meteorological geographical features':'Environment', 'Mineral resources':'Economy', 'Natural risk zones':'Environment', 'Oceanographic geographical features':'Environment', 'Orthoimagery':'Science', 'Population distribution - demography':'Population', 'Production and industrial facilities':'Economy', 'Protected sites':'Environment', 'Sea regions':'Environment', 'Soil':'Environment', 'Species distribution':'Environment', 'Statistical units':'Population', 'Transport networks':'Transport', 'Utility and governmental services':'Government' } 
+
+	if values['inspire-theme']:
+           values['mdr-theme'] = theme_map[values['inspire-theme']]
 
     def infer_date_updated(self, values):
         value = ''
