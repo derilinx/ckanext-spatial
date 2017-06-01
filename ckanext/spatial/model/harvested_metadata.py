@@ -245,7 +245,13 @@ class ISOResponsibleParty(ISOElement):
                     ],
                     multiplicity="0..1",
                 ),
-
+                ISOElement(
+                    name="phone",
+                    search_paths=[
+                        "gmd:phone/gmd:CI_Telephone/gmd:voice/gco:CharacterString/text()"
+                    ],
+                    multiplicity="0..1"
+                )
             ]
         ),
         ISOElement(
@@ -876,6 +882,8 @@ class ISODocument(MappedXmlDocument):
         self.infer_date_updated(values)
         self.infer_date_created(values)
         self.infer_url(values)
+        self.infer_inspire_theme(values)
+        self.infer_mdr_theme(values)
         # Todo: Infer resources.
         self.infer_tags(values)
         self.infer_publisher(values)
@@ -890,6 +898,23 @@ class ISODocument(MappedXmlDocument):
                 value = date['value']
                 break
         values['date-released'] = value
+
+    def infer_inspire_theme(self, values):
+        inspire_themes = ['Addresses', 'Administrative units', 'Agricultural and aquaculture facilities', 'Area management/restriction/regulation zones and reporting units', 'Atmospheric conditions', 'Bio-geographical regions', 'Buildings', 'Cadastral parcels', 'Coordinate reference systems', 'Elevation', 'Energy resources', 'Environmental monitoring facilities', 'Geographical grid systems', 'Geographical names', 'Geology', 'Habitats and biotopes', 'Human health and safety', 'Hydrography', 'Land cover', 'Land use', 'Meteorological geographical features', 'Mineral resources', 'Natural risk zones', 'Oceanographic geographical features', 'Orthoimagery', 'Population distribution - demography', 'Production and industrial facilities', 'Protected sites', 'Sea regions', 'Soil', 'Species distribution', 'Statistical units', 'Transport networks', 'Utility and governmental services']
+        themes = [t.lower() for t in inspire_themes]
+        value = ''
+        for tag in values['keyword-inspire-theme']:
+            if tag.lower() in themes:
+                value = tag
+                break
+        values['inspire-theme'] = value
+
+    def infer_mdr_theme(self, values):
+        # from https://docs.google.com/spreadsheets/d/1gplql8sQgEkKBosSZo22O8BnUJiuoO1ok1uTVEATaTo/edit?pref=2&pli=1#gid=0
+        theme_map = { 'addresses':'Government', 'administrative units':'Government', 'agricultural and aquaculture facilities':'Agriculture', 'area management/restriction/regulation zones and reporting units':'Environment', 'atmospheric conditions':'Environment', 'bio-geographical regions':'Environment', 'buildings':'Economy', 'cadastral parcels':'Environment', 'coordinate reference systems':'Science', 'elevation':'Science', 'energy resources':'Energy', 'environmental monitoring facilities':'Environment', 'geographical grid systems':'Science', 'geographical names':'Government', 'geology':'Science', 'habitats and biotopes':'Environment', 'human health and safety':'Health', 'hydrography':'Environment', 'land cover':'Environment', 'land use':'Science', 'meteorological geographical features':'Environment', 'mineral resources':'Economy', 'natural risk zones':'Environment', 'oceanographic geographical features':'Environment', 'orthoimagery':'Science', 'population distribution - demography':'Population', 'production and industrial facilities':'Economy', 'protected sites':'Environment', 'sea regions':'Environment', 'soil':'Environment', 'species distribution':'Environment', 'statistical units':'Population', 'transport networks':'Transport', 'utility and governmental services':'Government' }
+
+        if values['inspire-theme']:
+            values['mdr-theme'] = theme_map[values['inspire-theme'].lower()]
 
     def infer_date_updated(self, values):
         value = ''
