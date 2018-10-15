@@ -6,6 +6,7 @@ from lxml import etree
 
 log = __import__("logging").getLogger(__name__)
 
+SCHEMAS = {}
 
 class BaseValidator(object):
     '''Base class for a validator.'''
@@ -44,8 +45,15 @@ class XsdValidator(BaseValidator):
         Returns:
           (is_valid, [(error_message_string, error_line_number)])
         '''
-        xsd = etree.parse(xsd_filepath)
-        schema = etree.XMLSchema(xsd)
+        global SCHEMAS
+
+        if not xsd_filepath in SCHEMAS:
+            xsd = etree.parse(xsd_filepath)
+            log.debug(xsd_filepath)
+            schema = etree.XMLSchema(xsd)
+            SCHEMAS[xsd_filepath] = schema
+        schema = SCHEMAS[xsd_filepath]
+
         # With libxml2 versions before 2.9, this fails with this error:
         #    gmx_schema = etree.XMLSchema(gmx_xsd)
         # File "xmlschema.pxi", line 103, in
