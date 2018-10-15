@@ -84,6 +84,26 @@ class ISO19139Schema(XsdValidator):
         gmx_xsd_filepath = os.path.join(os.path.dirname(__file__),
                                         xsd_path, 'gmx/gmx.xsd')
         xsd_name = 'Dataset schema (gmx.xsd)'
+        # convert unversioned GML to versioned GML
+        if xml.nsmap['gml'] == 'http://www.opengis.net/gml':
+            for el in xml.iter('{http://www.opengis.net/gml}*'):
+                el.tag = el.tag.replace('/gml','/gml/3.2')
+                for k,v in el.items():
+                    # shouldn't be namespaced
+                    if k == '{http://www.opengis.net/gml}uom':
+                        del(el.attrib[k])
+                        el.set('{}uom', v)
+                        continue
+                    # types need updated
+                    if k == '{http://www.w3.org/2001/XMLSchema-instance}type' and 'gml:' in v:
+                        el.set(k, v.replace('gml:', 'gml32:'))
+                        continue
+                    # should be namespaced correctly
+                    if '/gml' in k:
+                        del(el.attrib[k])
+                        el.set(k.replace('/gml','/gml/3.2'), v)
+
+
         is_valid, errors = cls._is_valid(xml, gmx_xsd_filepath, xsd_name)
         if not is_valid:
             # TODO: not sure if we need this one,
