@@ -2,6 +2,8 @@ import os
 from pkg_resources import resource_stream
 from ckanext.spatial.model import ISODocument
 
+import datetime
+
 from lxml import etree
 
 log = __import__("logging").getLogger(__name__)
@@ -84,11 +86,34 @@ class ISO19139Schema(XsdValidator):
         gmx_xsd_filepath = os.path.join(os.path.dirname(__file__),
                                         xsd_path, 'gmx/gmx.xsd')
         xsd_name = 'Dataset schema (gmx.xsd)'
+
+        # Asign correct tags to dates & remove empty dates & reals
+        # {http://www.isotc211.org/2005/gco}DateTime -> {http://www.isotc211.org/2005/gco}Date
+        dates = xml.findall('.//{http://www.isotc211.org/2005/gco}DateTime')
+        for d in dates:
+            try:
+                _ = datetime.datetime.strptime(d.text, '%Y-%m-%d')
+                d.tag = '{http://www.isotc211.org/2005/gco}Date'
+                log.debug('--->>> %s --- %s' % (d.tag, d.text))
+            except TypeError as e:
+                # TODO: find better solution
+                log.debug('--->>> remove %s' % d.tag)
+                d.getparent().remove(d)
+            except ValueError as e:
+                pass
+
+        real = xml.findall('.//{http://www.isotc211.org/2005/gco}Real')
+        for r in real:
+            if not r.text:
+                # TODO: find better solution
+                log.debug('--->>> remove %s' % r.tag)
+                r.getparent().remove(r)
+
         # convert unversioned GML to versioned GML
         if xml.nsmap['gml'] == 'http://www.opengis.net/gml':
             for el in xml.iter('{http://www.opengis.net/gml}*'):
-                el.tag = el.tag.replace('/gml','/gml/3.2')
-                for k,v in el.items():
+                el.tag = el.tag.replace('/gml', '/gml/3.2')
+                for k, v in el.items():
                     # shouldn't be namespaced
                     if k == '{http://www.opengis.net/gml}uom':
                         del(el.attrib[k])
@@ -101,8 +126,7 @@ class ISO19139Schema(XsdValidator):
                     # should be namespaced correctly
                     if '/gml' in k:
                         del(el.attrib[k])
-                        el.set(k.replace('/gml','/gml/3.2'), v)
-
+                        el.set(k.replace('/gml', '/gml/3.2'), v)
 
         is_valid, errors = cls._is_valid(xml, gmx_xsd_filepath, xsd_name)
         if not is_valid:
