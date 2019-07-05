@@ -7,6 +7,7 @@ import logging
 
 from owslib.etree import etree
 from owslib.fes import PropertyIsEqualTo, SortBy, SortProperty
+from lxml.etree import XMLSyntaxError
 
 log = logging.getLogger(__name__)
 
@@ -124,29 +125,32 @@ class CswService(OwsService):
         while True:
             log.info('Making CSW request: getrecords2 %r', kwa)
 
-            csw.getrecords2(**kwa)
-            if csw.exceptionreport:
-                err = 'Error getting identifiers: %r' % \
-                      csw.exceptionreport.exceptions
-                #log.error(err)
-                raise CswError(err)
+            try:
+                csw.getrecords2(**kwa)
+                if csw.exceptionreport:
+                    err = 'Error getting identifiers: %r' % \
+                          csw.exceptionreport.exceptions
+                    log.error(err)
+                    #raise CswError(err)
+                else:
+                    if matches == 0:
+                        matches = csw.results['matches']
 
-            if matches == 0:
-                matches = csw.results['matches']
+                    identifiers = csw.records.keys()
+                    if limit is not None:
+                        identifiers = identifiers[:(limit-startposition)]
+                    for ident in identifiers:
+                        yield ident
 
-            identifiers = csw.records.keys()
-            if limit is not None:
-                identifiers = identifiers[:(limit-startposition)]
-            for ident in identifiers:
-                yield ident
+                    if len(identifiers) == 0:
+                        break
 
-            if len(identifiers) == 0:
-                break
-
-            i += len(identifiers)
-            if limit is not None and i > limit:
-                break
-
+                    i += len(identifiers)
+                    if limit is not None and i > limit:
+                        break
+            except XMLSyntaxError as e:
+                lot.error("Xml Syntax Error getting identifiers: %s", e)
+            
             startposition += page
             if startposition >= (matches + 1):
                 break
