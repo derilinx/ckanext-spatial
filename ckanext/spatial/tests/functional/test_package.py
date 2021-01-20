@@ -11,6 +11,7 @@ import ckan.tests.factories as factories
 
 from ckanext.spatial.model import PackageExtent
 from ckanext.spatial.tests.base import SpatialTestBase
+from sqlalchemy import func
 
 if not tk.check_ckan_version(min_version="2.9"):
     import ckan.tests.helpers as helpers
