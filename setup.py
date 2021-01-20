@@ -20,7 +20,13 @@ setup(
 	include_package_data=True,
 	zip_safe=False,
 	install_requires=[
-		# -*- Extra requirements: -*-
+            'GeoAlchemy2>=0.8.0',
+            'Shapely>=1.7',
+            'OWSLib>=0.21',
+            'lxml>=2.3',
+            'argparse',
+            'pyparsing>=2.1.10',
+            'requests<=3',
 	],
 	entry_points=\
 	"""
