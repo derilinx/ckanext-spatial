@@ -5,7 +5,6 @@ from sqlalchemy import Table
 from nose.plugins.skip import SkipTest
 
 from ckan.model import Session, repo, meta, engine_is_sqlite
-from ckanext.spatial.geoalchemy_common import postgis_version
 from ckanext.spatial.model.package_extent import setup as spatial_db_setup
 from ckanext.harvest.model import setup as harvest_model_setup
 
@@ -35,11 +34,7 @@ def _execute_script(script_path):
 def create_postgis_tables():
     scripts_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                 'scripts')
-    if postgis_version()[:1] == '1':
-        _execute_script(os.path.join(scripts_path, 'spatial_ref_sys.sql'))
-        _execute_script(os.path.join(scripts_path, 'geometry_columns.sql'))
-    else:
-        _execute_script(os.path.join(scripts_path, 'spatial_ref_sys.sql'))
+    _execute_script(os.path.join(scripts_path, 'spatial_ref_sys.sql'))
 
 
 class SpatialTestBase(object):

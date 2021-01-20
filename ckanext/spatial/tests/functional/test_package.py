@@ -12,8 +12,8 @@ except ImportError:
     import ckan.tests.factories as factories
 
 from ckanext.spatial.model import PackageExtent
-from ckanext.spatial.geoalchemy_common import legacy_geoalchemy
 from ckanext.spatial.tests.base import SpatialTestBase
+from sqlalchemy import func
 
 
 class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
@@ -42,22 +42,13 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
         geojson = json.loads(self.geojson_examples['point'])
 
         assert_equals(package_extent.package_id, dataset['id'])
-        if legacy_geoalchemy:
-            assert_equals(Session.scalar(package_extent.the_geom.x),
-                          geojson['coordinates'][0])
-            assert_equals(Session.scalar(package_extent.the_geom.y),
-                          geojson['coordinates'][1])
-            assert_equals(Session.scalar(package_extent.the_geom.srid),
-                          self.db_srid)
-        else:
-            from sqlalchemy import func
-            assert_equals(
-                Session.query(func.ST_X(package_extent.the_geom)).first()[0],
-                geojson['coordinates'][0])
-            assert_equals(
-                Session.query(func.ST_Y(package_extent.the_geom)).first()[0],
-                geojson['coordinates'][1])
-            assert_equals(package_extent.the_geom.srid, self.db_srid)
+        assert_equals(
+            Session.query(func.ST_X(package_extent.the_geom)).first()[0],
+            geojson['coordinates'][0])
+        assert_equals(
+            Session.query(func.ST_Y(package_extent.the_geom)).first()[0],
+            geojson['coordinates'][1])
+        assert_equals(package_extent.the_geom.srid, self.db_srid)
 
     def test_spatial_extra_edit(self):
         app = self._get_test_app()
@@ -91,20 +82,11 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
             .filter(PackageExtent.package_id == dataset['id']).first()
 
         assert_equals(package_extent.package_id, dataset['id'])
-        if legacy_geoalchemy:
-            assert_equals(
-                Session.scalar(package_extent.the_geom.geometry_type),
-                'ST_Polygon')
-            assert_equals(
-                Session.scalar(package_extent.the_geom.srid),
-                self.db_srid)
-        else:
-            from sqlalchemy import func
-            assert_equals(
-                Session.query(
-                    func.ST_GeometryType(package_extent.the_geom)).first()[0],
-                'ST_Polygon')
-            assert_equals(package_extent.the_geom.srid, self.db_srid)
+        assert_equals(
+            Session.query(
+                func.ST_GeometryType(package_extent.the_geom)).first()[0],
+            'ST_Polygon')
+        assert_equals(package_extent.the_geom.srid, self.db_srid)
 
     def test_spatial_extra_bad_json(self):
         app = self._get_test_app()

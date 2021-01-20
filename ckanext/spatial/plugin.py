@@ -13,8 +13,9 @@ from ckan.lib.helpers import json
 def check_geoalchemy_requirement():
     '''Checks if a suitable geoalchemy version installed
 
-       Checks if geoalchemy2 is present when using CKAN >= 2.3, and raises
-       an ImportError otherwise so users can upgrade manually.
+       Checks if geoalchemy2 is present, and raises an ImportError
+       otherwise so users can upgrade manually.
+
     '''
 
     msg = ('This version of ckanext-spatial requires {0}. ' +
@@ -22,16 +23,10 @@ def check_geoalchemy_requirement():
            'For more details see the "Troubleshooting" section of the ' +
            'install documentation')
 
-    if p.toolkit.check_ckan_version(min_version='2.3'):
-        try:
-            import geoalchemy2
-        except ImportError:
-            raise ImportError(msg.format('geoalchemy2'))
-    else:
-        try:
-            import geoalchemy
-        except ImportError:
-            raise ImportError(msg.format('geoalchemy'))
+    try:
+        import geoalchemy2
+    except ImportError:
+        raise ImportError(msg.format('geoalchemy2'))
 
 check_geoalchemy_requirement()
 
