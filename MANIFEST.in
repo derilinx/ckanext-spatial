@@ -1,3 +1,6 @@
 recursive-include ckanext/spatial/templates                                           *
 recursive-include ckanext/spatial/public                                              *
 recursive-include ckanext/spatial/validation/xml                                      *
+graft ckanext
+include *.py
+include README.md
