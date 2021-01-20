@@ -47,7 +47,7 @@ def package_error_summary(error_dict):
         return p.toolkit._(field_name.replace('_', ' '))
 
     summary = {}
-    for key, error in error_dict.iteritems():
+    for key, error in error_dict.items():
         if key == 'resources':
             summary[p.toolkit._('Resources')] = p.toolkit._(
                 'Package resource(s) invalid')
@@ -110,23 +110,23 @@ class SpatialMetadata(p.SingletonPlugin):
                     try:
                         log.debug('Received: %r' % extra.value)
                         geometry = json.loads(extra.value)
-                    except ValueError,e:
-                        error_dict = {'spatial':[u'Error decoding JSON object: %s' % str(e)]}
+                    except ValueError as e:
+                        error_dict = {'spatial':['Error decoding JSON object: %s' % str(e)]}
                         raise p.toolkit.ValidationError(error_dict, error_summary=package_error_summary(error_dict))
-                    except TypeError,e:
-                        error_dict = {'spatial':[u'Error decoding JSON object: %s' % str(e)]}
+                    except TypeError as e:
+                        error_dict = {'spatial':['Error decoding JSON object: %s' % str(e)]}
                         raise p.toolkit.ValidationError(error_dict, error_summary=package_error_summary(error_dict))
 
                     try:
                         save_package_extent(package.id,geometry)
 
-                    except ValueError,e:
-                        error_dict = {'spatial':[u'Error creating geometry: %s' % str(e)]}
+                    except ValueError as e:
+                        error_dict = {'spatial':['Error creating geometry: %s' % str(e)]}
                         raise p.toolkit.ValidationError(error_dict, error_summary=package_error_summary(error_dict))
-                    except Exception, e:
+                    except Exception as e:
                         if bool(os.getenv('DEBUG')):
                             raise
-                        error_dict = {'spatial':[u'Error: %s' % str(e)]}
+                        error_dict = {'spatial':['Error: %s' % str(e)]}
                         raise p.toolkit.ValidationError(error_dict, error_summary=package_error_summary(error_dict))
 
                 elif (extra.state == 'active' and not extra.value) or extra.state == 'deleted':
@@ -180,7 +180,7 @@ class SpatialQuery(p.SingletonPlugin):
         if pkg_dict.get('extras_spatial', None) and self.search_backend in ('solr', 'solr-spatial-field'):
             try:
                 geometry = json.loads(pkg_dict['extras_spatial'])
-            except ValueError, e:
+            except ValueError as e:
                 log.error('Geometry not valid GeoJSON, not indexing')
                 return pkg_dict
 

@@ -1,9 +1,9 @@
 import logging
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 from pylons import response
 from pkg_resources import resource_stream
@@ -128,7 +128,7 @@ class HarvestMetadataApiController(BaseApiController):
         response.headers['Content-Length'] = len(content)
 
         if not '<?xml' in content.split('\n')[0]:
-            content = u'<?xml version="1.0" encoding="UTF-8"?>\n' + content
+            content = '<?xml version="1.0" encoding="UTF-8"?>\n' + content
         return content.encode('utf-8')
 
     def display_html(self, id):

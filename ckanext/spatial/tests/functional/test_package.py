@@ -29,7 +29,7 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
         res = app.get(offset, extra_environ=env)
 
         form = res.forms[1]
-        form['extras__0__key'] = u'spatial'
+        form['extras__0__key'] = 'spatial'
         form['extras__0__value'] = self.geojson_examples['point']
 
         res = helpers.submit_and_follow(app, form, env, 'save')
@@ -70,7 +70,7 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
         res = app.get(offset, extra_environ=env)
 
         form = res.forms[1]
-        form['extras__0__key'] = u'spatial'
+        form['extras__0__key'] = 'spatial'
         form['extras__0__value'] = self.geojson_examples['point']
 
         res = helpers.submit_and_follow(app, form, env, 'save')
@@ -80,7 +80,7 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
         res = app.get(offset, extra_environ=env)
 
         form = res.forms[1]
-        form['extras__0__key'] = u'spatial'
+        form['extras__0__key'] = 'spatial'
         form['extras__0__value'] = self.geojson_examples['polygon']
 
         res = helpers.submit_and_follow(app, form, env, 'save')
@@ -117,8 +117,8 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
         res = app.get(offset, extra_environ=env)
 
         form = res.forms[1]
-        form['extras__0__key'] = u'spatial'
-        form['extras__0__value'] = u'{"Type":Bad Json]'
+        form['extras__0__key'] = 'spatial'
+        form['extras__0__value'] = '{"Type":Bad Json]'
 
         res = helpers.webtest_submit(form, extra_environ=env, name='save')
 
@@ -137,8 +137,8 @@ class TestSpatialExtra(SpatialTestBase, helpers.FunctionalTestBase):
         res = app.get(offset, extra_environ=env)
 
         form = res.forms[1]
-        form['extras__0__key'] = u'spatial'
-        form['extras__0__value'] = u'{"Type":"Bad_GeoJSON","a":2}'
+        form['extras__0__key'] = 'spatial'
+        form['extras__0__value'] = '{"Type":"Bad_GeoJSON","a":2}'
 
         res = helpers.webtest_submit(form, extra_environ=env, name='save')
 

@@ -96,7 +96,7 @@ def validate_bbox(bbox_values):
     Any problems and it returns None.
     '''
 
-    if isinstance(bbox_values,basestring):
+    if isinstance(bbox_values,str):
         bbox_values = bbox_values.split(',')
 
     if len(bbox_values) is not 4:
@@ -108,7 +108,7 @@ def validate_bbox(bbox_values):
         bbox['miny'] = float(bbox_values[1])
         bbox['maxx'] = float(bbox_values[2])
         bbox['maxy'] = float(bbox_values[3])
-    except ValueError,e:
+    except ValueError as e:
         return None
 
     return bbox
@@ -151,7 +151,7 @@ def bbox_query(bbox,srid=None):
     extents = Session.query(PackageExtent) \
               .filter(PackageExtent.package_id==Package.id) \
               .filter(PackageExtent.the_geom.intersects(input_geometry)) \
-              .filter(Package.state==u'active')
+              .filter(Package.state=='active')
     return extents
 
 def bbox_query_ordered(bbox, srid=None):

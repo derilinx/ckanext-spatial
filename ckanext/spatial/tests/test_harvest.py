@@ -25,7 +25,7 @@ from ckanext.spatial.harvesters.gemini import (GeminiDocHarvester,
 from ckanext.spatial.harvesters.base import SpatialHarvester
 from ckanext.spatial.tests.base import SpatialTestBase
 
-from xml_file_server import serve
+from .xml_file_server import serve
 
 # Start simple HTTP server that serves XML test files
 serve()
@@ -35,14 +35,14 @@ class HarvestFixtureBase(SpatialTestBase):
 
     def setup(self):
         # Add sysadmin user
-        harvest_user = model.User(name=u'harvest', password=u'test', sysadmin=True)
+        harvest_user = model.User(name='harvest', password='test', sysadmin=True)
         Session.add(harvest_user)
         Session.commit()
 
         package_schema = default_update_package_schema()
         self.context ={'model':model,
                        'session':Session,
-                       'user':u'harvest',
+                       'user':'harvest',
                        'schema':package_schema,
                        'api_version': '2'}
 
@@ -53,7 +53,7 @@ class HarvestFixtureBase(SpatialTestBase):
         # Create a job
         context ={'model':model,
                  'session':Session,
-                 'user':u'harvest'}
+                 'user':'harvest'}
 
         job_dict=get_action('harvest_job_create')(context,{'source_id':source_id})
         job = HarvestJob.get(job_dict['id'])
@@ -64,9 +64,9 @@ class HarvestFixtureBase(SpatialTestBase):
     def _create_source_and_job(self, source_fixture):
         context ={'model':model,
                  'session':Session,
-                 'user':u'harvest'}
+                 'user':'harvest'}
 
-        if config.get('ckan.harvest.auth.profile') == u'publisher' \
+        if config.get('ckan.harvest.auth.profile') == 'publisher' \
            and not 'publisher_id' in source_fixture:
            source_fixture['publisher_id'] = self.publisher.id
 
@@ -104,7 +104,7 @@ class HarvestFixtureBase(SpatialTestBase):
         else:
             assert len(obj.errors) == 0
 
-        job.status = u'Finished'
+        job.status = 'Finished'
         job.save()
 
         return obj
@@ -117,7 +117,7 @@ class TestHarvest(HarvestFixtureBase):
         HarvestFixtureBase.setup_class()
 
     def clean_tags(self, tags):
-        return  map(lambda x: {u'name': x['name']}, tags)
+        return  [{'name': x['name']} for x in tags]
 
     def find_extra(self, pkg, key):
         values = [e['value'] for e in pkg['extras'] if e['key'] == key]
@@ -129,8 +129,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1-waf/index.html',
-            'source_type': u'gemini-waf'
+            'url': 'http://127.0.0.1:8999/gemini2.1-waf/index.html',
+            'source_type': 'gemini-waf'
         }
 
         source, job = self._create_source_and_job(source_fixture)
@@ -152,7 +152,7 @@ class TestHarvest(HarvestFixtureBase):
             objects.append(obj)
             harvester.import_stage(obj)
 
-        pkgs = Session.query(Package).filter(Package.type!=u'harvest').all()
+        pkgs = Session.query(Package).filter(Package.type!='harvest').all()
 
         assert_equal(len(pkgs), 2)
 
@@ -168,8 +168,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/service1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/service1.xml',
+            'source_type': 'gemini-single'
         }
 
         source, job = self._create_source_and_job(source_fixture)
@@ -187,7 +187,7 @@ class TestHarvest(HarvestFixtureBase):
 
         obj = HarvestObject.get(object_ids[0])
         assert obj, obj.content
-        assert obj.guid == u'test-service-1'
+        assert obj.guid == 'test-service-1'
 
         harvester.import_stage(obj)
 
@@ -199,52 +199,52 @@ class TestHarvest(HarvestFixtureBase):
         assert package_dict
 
         expected = {
-            'name': u'one-scotland-address-gazetteer-web-map-service-wms',
-            'title': u'One Scotland Address Gazetteer Web Map Service (WMS)',
-            'tags': [{u'name': u'Addresses'}, {u'name': u'Scottish National Gazetteer'}],
-            'notes': u'This service displays its contents at larger scale than 1:10000. [edited]',
+            'name': 'one-scotland-address-gazetteer-web-map-service-wms',
+            'title': 'One Scotland Address Gazetteer Web Map Service (WMS)',
+            'tags': [{'name': 'Addresses'}, {'name': 'Scottish National Gazetteer'}],
+            'notes': 'This service displays its contents at larger scale than 1:10000. [edited]',
         }
 
         package_dict['tags'] = self.clean_tags(package_dict['tags'])
 
-        for key,value in expected.iteritems():
+        for key,value in expected.items():
             if not package_dict[key] == value:
                 raise AssertionError('Unexpected value for %s: %s (was expecting %s)' % \
                     (key, package_dict[key], value))
 
-        if config.get('ckan.harvest.auth.profile') == u'publisher':
+        if config.get('ckan.harvest.auth.profile') == 'publisher':
             assert package_dict['groups'] == [self.publisher.id]
 
         expected_extras = {
             # Basic
             'guid': obj.guid,
-            'UKLP': u'True',
-            'resource-type': u'service',
-            'access_constraints': u'["No restriction on public access"]',
-            'responsible-party': u'The Improvement Service (owner)',
-            'provider':u'The Improvement Service',
-            'contact-email': u'OSGCM@improvementservice.org.uk',
+            'UKLP': 'True',
+            'resource-type': 'service',
+            'access_constraints': '["No restriction on public access"]',
+            'responsible-party': 'The Improvement Service (owner)',
+            'provider':'The Improvement Service',
+            'contact-email': 'OSGCM@improvementservice.org.uk',
             # Spatial
-            'bbox-east-long': u'0.5242365625',
-            'bbox-north-lat': u'61.0243',
-            'bbox-south-lat': u'54.4764484375',
-            'bbox-west-long': u'-9.099786875',
-            'spatial': u'{"type": "Polygon", "coordinates": [[[0.5242365625, 54.4764484375], [-9.099786875, 54.4764484375], [-9.099786875, 61.0243], [0.5242365625, 61.0243], [0.5242365625, 54.4764484375]]]}',
+            'bbox-east-long': '0.5242365625',
+            'bbox-north-lat': '61.0243',
+            'bbox-south-lat': '54.4764484375',
+            'bbox-west-long': '-9.099786875',
+            'spatial': '{"type": "Polygon", "coordinates": [[[0.5242365625, 54.4764484375], [-9.099786875, 54.4764484375], [-9.099786875, 61.0243], [0.5242365625, 61.0243], [0.5242365625, 54.4764484375]]]}',
             # Other
-            'coupled-resource': u'[{"href": ["http://scotgovsdi.edina.ac.uk/srv/en/csw?service=CSW&request=GetRecordById&version=2.0.2&outputSchema=http://www.isotc211.org/2005/gmd&elementSetName=full&id=250ea276-48e2-4189-8a89-fcc4ca92d652"], "uuid": ["250ea276-48e2-4189-8a89-fcc4ca92d652"], "title": []}]',
-            'dataset-reference-date': u'[{"type": "publication", "value": "2011-09-08"}]',
-            'frequency-of-update': u'daily',
-            'licence': u'["Use of the One Scotland Gazetteer data used by this this service is available to any organisation that is a member of the One Scotland Mapping Agreement. It is not currently commercially available", "http://www.test.gov.uk/licenseurl"]',
-            'licence_url': u'http://www.test.gov.uk/licenseurl',
-            'metadata-date': u'2011-09-08T16:07:32',
-            'metadata-language': u'eng',
-            'spatial-data-service-type': u'other',
-            'spatial-reference-system': u'OSGB 1936 / British National Grid (EPSG:27700)',
-            'temporal_coverage-from': u'["1904-06-16"]',
-            'temporal_coverage-to': u'["2004-06-16"]',
+            'coupled-resource': '[{"href": ["http://scotgovsdi.edina.ac.uk/srv/en/csw?service=CSW&request=GetRecordById&version=2.0.2&outputSchema=http://www.isotc211.org/2005/gmd&elementSetName=full&id=250ea276-48e2-4189-8a89-fcc4ca92d652"], "uuid": ["250ea276-48e2-4189-8a89-fcc4ca92d652"], "title": []}]',
+            'dataset-reference-date': '[{"type": "publication", "value": "2011-09-08"}]',
+            'frequency-of-update': 'daily',
+            'licence': '["Use of the One Scotland Gazetteer data used by this this service is available to any organisation that is a member of the One Scotland Mapping Agreement. It is not currently commercially available", "http://www.test.gov.uk/licenseurl"]',
+            'licence_url': 'http://www.test.gov.uk/licenseurl',
+            'metadata-date': '2011-09-08T16:07:32',
+            'metadata-language': 'eng',
+            'spatial-data-service-type': 'other',
+            'spatial-reference-system': 'OSGB 1936 / British National Grid (EPSG:27700)',
+            'temporal_coverage-from': '["1904-06-16"]',
+            'temporal_coverage-to': '["2004-06-16"]',
         }
 
-        for key,value in expected_extras.iteritems():
+        for key,value in expected_extras.items():
             extra_value = self.find_extra(package_dict, key)
             if extra_value is None:
                 raise AssertionError('Extra %s not present in package' % key)
@@ -259,12 +259,12 @@ class TestHarvest(HarvestFixtureBase):
             'name': 'Web Map Service (WMS)',
             'resource_locator_function': 'download',
             'resource_locator_protocol': 'OGC:WMS-1.3.0-http-get-capabilities',
-            'url': u'http://127.0.0.1:8999/wms/capabilities.xml',
+            'url': 'http://127.0.0.1:8999/wms/capabilities.xml',
             'verified': 'True',
         }
 
         resource = package_dict['resources'][0]
-        for key,value in expected_resource.iteritems():
+        for key,value in expected_resource.items():
             if not key in resource:
                 raise AssertionError('Expected key not in resource: %s' % (key))
             if not resource[key] == value:
@@ -279,8 +279,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
+            'source_type': 'gemini-single'
         }
 
         source, job = self._create_source_and_job(source_fixture)
@@ -298,7 +298,7 @@ class TestHarvest(HarvestFixtureBase):
 
         obj = HarvestObject.get(object_ids[0])
         assert obj, obj.content
-        assert obj.guid == u'test-dataset-1'
+        assert obj.guid == 'test-dataset-1'
 
         harvester.import_stage(obj)
 
@@ -310,50 +310,50 @@ class TestHarvest(HarvestFixtureBase):
         assert package_dict
 
         expected = {
-            'name': u'country-parks-scotland',
-            'title': u'Country Parks (Scotland)',
-            'tags': [{u'name': u'Nature conservation'}],
-            'notes': u'Parks are set up by Local Authorities to provide open-air recreation facilities close to towns and cities. [edited]'
+            'name': 'country-parks-scotland',
+            'title': 'Country Parks (Scotland)',
+            'tags': [{'name': 'Nature conservation'}],
+            'notes': 'Parks are set up by Local Authorities to provide open-air recreation facilities close to towns and cities. [edited]'
         }
 
         package_dict['tags'] = self.clean_tags(package_dict['tags'])
 
-        for key,value in expected.iteritems():
+        for key,value in expected.items():
             if not package_dict[key] == value:
                 raise AssertionError('Unexpected value for %s: %s (was expecting %s)' % \
                     (key, package_dict[key], value))
 
-        if config.get('ckan.harvest.auth.profile') == u'publisher':
+        if config.get('ckan.harvest.auth.profile') == 'publisher':
             assert package_dict['groups'] == [self.publisher.id]
 
         expected_extras = {
             # Basic
             'guid': obj.guid,
-            'resource-type': u'dataset',
-            'responsible-party': u'Scottish Natural Heritage (custodian, distributor)',
-            'access_constraints': u'["Copyright Scottish Natural Heritage"]',
-            'contact-email': u'data_supply@snh.gov.uk',
+            'resource-type': 'dataset',
+            'responsible-party': 'Scottish Natural Heritage (custodian, distributor)',
+            'access_constraints': '["Copyright Scottish Natural Heritage"]',
+            'contact-email': 'data_supply@snh.gov.uk',
             'provider':'',
             # Spatial
-            'bbox-east-long': u'0.205857204',
-            'bbox-north-lat': u'61.06066944',
-            'bbox-south-lat': u'54.529947158',
-            'bbox-west-long': u'-8.97114288',
-            'spatial': u'{"type": "Polygon", "coordinates": [[[0.205857204, 54.529947158], [-8.97114288, 54.529947158], [-8.97114288, 61.06066944], [0.205857204, 61.06066944], [0.205857204, 54.529947158]]]}',
+            'bbox-east-long': '0.205857204',
+            'bbox-north-lat': '61.06066944',
+            'bbox-south-lat': '54.529947158',
+            'bbox-west-long': '-8.97114288',
+            'spatial': '{"type": "Polygon", "coordinates": [[[0.205857204, 54.529947158], [-8.97114288, 54.529947158], [-8.97114288, 61.06066944], [0.205857204, 61.06066944], [0.205857204, 54.529947158]]]}',
             # Other
-            'coupled-resource': u'[]',
-            'dataset-reference-date': u'[{"type": "creation", "value": "2004-02"}, {"type": "revision", "value": "2006-07-03"}]',
-            'frequency-of-update': u'irregular',
-            'licence': u'["Reference and PSMA Only", "http://www.test.gov.uk/licenseurl"]',
-            'licence_url': u'http://www.test.gov.uk/licenseurl',
-            'metadata-date': u'2011-09-23T10:06:08',
-            'metadata-language': u'eng',
-            'spatial-reference-system': u'urn:ogc:def:crs:EPSG::27700',
-            'temporal_coverage-from': u'["1998"]',
-            'temporal_coverage-to': u'["2010"]',
+            'coupled-resource': '[]',
+            'dataset-reference-date': '[{"type": "creation", "value": "2004-02"}, {"type": "revision", "value": "2006-07-03"}]',
+            'frequency-of-update': 'irregular',
+            'licence': '["Reference and PSMA Only", "http://www.test.gov.uk/licenseurl"]',
+            'licence_url': 'http://www.test.gov.uk/licenseurl',
+            'metadata-date': '2011-09-23T10:06:08',
+            'metadata-language': 'eng',
+            'spatial-reference-system': 'urn:ogc:def:crs:EPSG::27700',
+            'temporal_coverage-from': '["1998"]',
+            'temporal_coverage-to': '["2010"]',
         }
 
-        for key, value in expected_extras.iteritems():
+        for key, value in expected_extras.items():
             extra_value = self.find_extra(package_dict, key)
             if extra_value is None:
                 raise AssertionError('Extra %s not present in package' % key)
@@ -364,15 +364,15 @@ class TestHarvest(HarvestFixtureBase):
 
         expected_resource = {
             'description': 'Test Resource Description',
-            'format': u'',
+            'format': '',
             'name': 'Test Resource Name',
             'resource_locator_function': 'download',
             'resource_locator_protocol': 'test-protocol',
-            'url': u'https://gateway.snh.gov.uk/pls/apex_ddtdb2/f?p=101',
+            'url': 'https://gateway.snh.gov.uk/pls/apex_ddtdb2/f?p=101',
         }
 
         resource = package_dict['resources'][0]
-        for key,value in expected_resource.iteritems():
+        for key,value in expected_resource.items():
             if not resource[key] == value:
                 raise AssertionError('Unexpected value in resource for %s: %s (was expecting %s)' % \
                     (key, resource[key], value))
@@ -382,8 +382,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/error_bad_xml.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/error_bad_xml.xml',
+            'source_type': 'gemini-single'
         }
 
         source, job = self._create_source_and_job(source_fixture)
@@ -408,8 +408,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/not_there.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/not_there.xml',
+            'source_type': 'gemini-single'
         }
 
         source, job = self._create_source_and_job(source_fixture)
@@ -430,8 +430,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/error_validation.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/error_validation.xml',
+            'source_type': 'gemini-single'
         }
 
         source, job = self._create_source_and_job(source_fixture)
@@ -451,7 +451,7 @@ class TestHarvest(HarvestFixtureBase):
 
         obj = HarvestObject.get(object_ids[0])
         assert obj, obj.content
-        assert obj.guid == u'test-error-validation-1'
+        assert obj.guid == 'test-error-validation-1'
 
         harvester.import_stage(obj)
 
@@ -473,8 +473,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
+            'source_type': 'gemini-single'
         }
 
         source, first_job = self._create_source_and_job(source_fixture)
@@ -537,8 +537,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/service1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/service1.xml',
+            'source_type': 'gemini-single'
         }
 
         source, first_job = self._create_source_and_job(source_fixture)
@@ -549,17 +549,17 @@ class TestHarvest(HarvestFixtureBase):
 
         # Package was created
         assert first_package_dict
-        assert first_package_dict['state'] == u'active'
+        assert first_package_dict['state'] == 'active'
         assert first_obj.current == True
 
         # Delete package
-        first_package_dict['state'] = u'deleted'
+        first_package_dict['state'] = 'deleted'
         self.context.update({'id':first_package_dict['id']})
         updated_package_dict = get_action('package_update')(self.context,first_package_dict)
 
         # Create and run a second job, the date has not changed, so the package should not be updated
         # and remain deleted
-        first_job.status = u'Finished'
+        first_job.status = 'Finished'
         first_job.save()
         second_job = self._create_job(source.id)
 
@@ -575,7 +575,7 @@ class TestHarvest(HarvestFixtureBase):
 
         # Harvest an updated document, with a more recent modified date, package should be
         # updated and reactivated
-        source.url = u'http://127.0.0.1:8999/gemini2.1/service1_newer.xml'
+        source.url = 'http://127.0.0.1:8999/gemini2.1/service1_newer.xml'
         source.save()
 
         third_job = self._create_job(source.id)
@@ -600,7 +600,7 @@ class TestHarvest(HarvestFixtureBase):
         assert first_obj.current == False
 
         assert 'NEWER' in third_package_dict['title']
-        assert third_package_dict['state'] == u'active'
+        assert third_package_dict['state'] == 'active'
 
 
 
@@ -610,8 +610,8 @@ class TestHarvest(HarvestFixtureBase):
         source1_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/source1/same_dataset.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/source1/same_dataset.xml',
+            'source_type': 'gemini-single'
         }
 
         source1, first_job = self._create_source_and_job(source1_fixture)
@@ -622,7 +622,7 @@ class TestHarvest(HarvestFixtureBase):
 
         # Package was created
         assert first_package_dict
-        assert first_package_dict['state'] == u'active'
+        assert first_package_dict['state'] == 'active'
         assert first_obj.current == True
 
         # Harvest the same document, unchanged, from another source, the package
@@ -632,8 +632,8 @@ class TestHarvest(HarvestFixtureBase):
         source2_fixture = {
             'title': 'Test Source 2',
             'name': 'test-source-2',
-            'url': u'http://127.0.0.1:8999/gemini2.1/source2/same_dataset.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/source2/same_dataset.xml',
+            'source_type': 'gemini-single'
         }
 
         source2, second_job = self._create_source_and_job(source2_fixture)
@@ -676,8 +676,8 @@ class TestHarvest(HarvestFixtureBase):
         source1_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/source1/same_dataset.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/source1/same_dataset.xml',
+            'source_type': 'gemini-single'
         }
 
         source1, first_job = self._create_source_and_job(source1_fixture)
@@ -688,7 +688,7 @@ class TestHarvest(HarvestFixtureBase):
 
         # Package was created
         assert first_package_dict
-        assert first_package_dict['state'] == u'active'
+        assert first_package_dict['state'] == 'active'
         assert first_obj.current == True
 
         # Delete/withdraw the package
@@ -699,8 +699,8 @@ class TestHarvest(HarvestFixtureBase):
         source2_fixture = {
             'title': 'Test Source 2',
             'name': 'test-source-2',
-            'url': u'http://127.0.0.1:8999/gemini2.1/source2/same_dataset.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/source2/same_dataset.xml',
+            'source_type': 'gemini-single'
         }
 
         source2, second_job = self._create_source_and_job(source2_fixture)
@@ -722,8 +722,8 @@ class TestHarvest(HarvestFixtureBase):
         source1_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/service1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/service1.xml',
+            'source_type': 'gemini-single'
         }
 
         source1, first_job = self._create_source_and_job(source1_fixture)
@@ -734,15 +734,15 @@ class TestHarvest(HarvestFixtureBase):
 
         # Package was created
         assert first_package_dict
-        assert first_package_dict['state'] == u'active'
+        assert first_package_dict['state'] == 'active'
         assert first_obj.current == True
 
         # Harvest the same document GUID but with a newer date, from another source.
         source2_fixture = {
             'title': 'Test Source 2',
             'name': 'test-source-2',
-            'url': u'http://127.0.0.1:8999/gemini2.1/service1_newer.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/service1_newer.xml',
+            'source_type': 'gemini-single'
         }
 
         source2, second_job = self._create_source_and_job(source2_fixture)
@@ -767,8 +767,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
+            'source_type': 'gemini-single'
         }
 
         source, first_job = self._create_source_and_job(source_fixture)
@@ -817,8 +817,8 @@ class TestHarvest(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
-            'source_type': u'gemini-single',
+            'url': 'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
+            'source_type': 'gemini-single',
             'owner_org': 'test-org',
             'metadata_created': datetime.now().strftime('%YYYY-%MM-%DD %HH:%MM:%s'),
             'metadata_modified': datetime.now().strftime('%YYYY-%MM-%DD %HH:%MM:%s'),
@@ -862,7 +862,7 @@ class TestHarvest(HarvestFixtureBase):
               'publisher_identifier': 'dummy',
               'metadata_created' : datetime.now(),
               'metadata_modified' : datetime.now(),
-              'guid': unicode(uuid4()),
+              'guid': str(uuid4()),
               'identifier': 'dummy'}
         
         package_data = call_action('package_create', context=context, **package_dict)
@@ -927,8 +927,8 @@ class TestGatherMethods(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/dataset1.xml',
+            'source_type': 'gemini-single'
         }
         source, job = self._create_source_and_job(source_fixture)
         self.harvester = GeminiHarvester()
@@ -1060,8 +1060,8 @@ class TestValidation(HarvestFixtureBase):
         source_fixture = {
             'title': 'Test Source',
             'name': 'test-source',
-            'url': u'http://127.0.0.1:8999/gemini2.1/validation/%s' % validation_test_filename,
-            'source_type': u'gemini-single'
+            'url': 'http://127.0.0.1:8999/gemini2.1/validation/%s' % validation_test_filename,
+            'source_type': 'gemini-single'
         }
 
         source, job = self._create_source_and_job(source_fixture)
