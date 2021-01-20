@@ -1,9 +1,6 @@
 import logging
 
-try:
-    from io import StringIO
-except ImportError:
-    from io import StringIO
+from io import StringIO
 
 from pylons import response
 from pkg_resources import resource_stream
