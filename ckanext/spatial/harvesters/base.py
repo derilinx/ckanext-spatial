@@ -13,7 +13,7 @@ import dateutil
 import mimetypes
 
 
-from pylons import config
+from ckan.plugins.toolkit import config
 from owslib import wms
 import requests
 from lxml import etree

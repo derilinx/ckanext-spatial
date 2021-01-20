@@ -2,7 +2,7 @@ import time
 from urllib.request import urlopen
 import os
 
-from pylons import config
+from ckan.plugins.toolkit import config
 from nose.plugins.skip import SkipTest
 
 from ckan.model import engine_is_sqlite
