@@ -149,7 +149,7 @@ class CswService(OwsService):
                     if limit is not None and i > limit:
                         break
             except XMLSyntaxError as e:
-                lot.error("Xml Syntax Error getting identifiers: %s", e)
+                log.error("Xml Syntax Error getting identifiers: %s", e)
             
             startposition += page
             if startposition >= (matches + 1):
