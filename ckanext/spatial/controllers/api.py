@@ -6,13 +6,19 @@ from six import StringIO
 from pylons import response
 from pkg_resources import resource_stream
 from lxml import etree
-
+from ckan.plugins import toolkit
 from ckan.lib.base import request, config, abort
 from ckan.controllers.api import ApiController as BaseApiController
 from ckan.model import Session
 
 from ckanext.harvest.model import HarvestObject, HarvestObjectExtra
 from ckanext.spatial.lib import get_srid, validate_bbox, bbox_query
+
+if toolkit.check_ckan_version("2.9"):
+    from ckan.plugins.toolkit import response
+else:
+    from pylons import response
+
 
 log = logging.getLogger(__name__)
 
