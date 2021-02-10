@@ -14,7 +14,7 @@ from ckan.model import Session
 from ckanext.harvest.model import HarvestObject, HarvestObjectExtra
 from ckanext.spatial.lib import get_srid, validate_bbox, bbox_query
 
-if toolkit.check_ckan_version("2.9"):
+if toolkit.check_ckan_version(min_version='2.9.0'):
     from ckan.plugins.toolkit import response
 else:
     from pylons import response
