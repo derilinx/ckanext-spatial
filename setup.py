@@ -46,7 +46,7 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
             'GeoAlchemy2>=0.8.0',
             'Shapely>=1.7',
             'pyproj>=2.2.2,<2.9',
-            'OWSLib>=0.21',
+            'OWSLib>=0.18',
             'lxml>=2.3',
             'argparse',
             'pyparsing>=2.1.10',
