@@ -1,5 +1,4 @@
 from lxml import etree
-import six
 
 import logging
 log = logging.getLogger(__name__)
@@ -38,7 +37,10 @@ class MappedXmlDocument(MappedXmlObject):
     def get_xml_tree(self):
         if self.xml_tree is None:
             parser = etree.XMLParser(remove_blank_text=True)
-            xml_str = six.ensure_str(self.xml_str)
+            if type(self.xml_str) == unicode:
+                xml_str = self.xml_str.encode('utf8')
+            else:
+                xml_str = self.xml_str
             self.xml_tree = etree.fromstring(xml_str, parser=parser)
         return self.xml_tree
 
@@ -93,7 +95,7 @@ class MappedXmlElement(MappedXmlObject):
         elif type(element) == etree._ElementStringResult:
             value = str(element)
         elif type(element) == etree._ElementUnicodeResult:
-            value = str(element)
+            value = unicode(element)
         else:
             value = self.element_tostring(element)
         return value
@@ -952,7 +954,7 @@ class ISODocument(MappedXmlDocument):
         for responsible_party in values['responsible-organisation']:
             if isinstance(responsible_party, dict) and \
                isinstance(responsible_party.get('contact-info'), dict) and \
-               'email' in responsible_party['contact-info']:
+               responsible_party['contact-info'].has_key('email'):
                 value = responsible_party['contact-info']['email']
                 if value:
                     break
