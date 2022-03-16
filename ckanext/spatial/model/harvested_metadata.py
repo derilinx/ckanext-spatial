@@ -94,7 +94,7 @@ class MappedXmlElement(MappedXmlObject):
             value = str(element)
         elif type(element) == etree._ElementUnicodeResult:
             if six.PY2:
-                value = unicode(element)
+                value = unicode(element) # noqa    ## E821, flake8 unicode not defined on py3
             else:
                 value = str(element)
         else:
