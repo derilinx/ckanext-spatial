@@ -93,7 +93,10 @@ class MappedXmlElement(MappedXmlObject):
         elif type(element) == etree._ElementStringResult:
             value = str(element)
         elif type(element) == etree._ElementUnicodeResult:
-            value = str(element)
+            if six.PY2:
+                value = unicode(element)
+            else:
+                value = str(element)
         else:
             value = self.element_tostring(element)
         return value
