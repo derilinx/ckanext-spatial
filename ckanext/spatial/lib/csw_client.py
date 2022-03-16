@@ -182,10 +182,19 @@ class CswService(OwsService):
         except TypeError:
             # API incompatibilities between different flavours of elementtree
             try:
-                record["xml"] = etree.tostring(mdtree, pretty_print=True, encoding=str)
+                record["xml"] = etree.tostring(mdtree, pretty_print=True, encoding='utf-8')
             except AssertionError:
                 record["xml"] = etree.tostring(md, pretty_print=True, encoding=str)
+            except UnicodeDecodeError as msg:
+                log.error('Unicode Decode Error: %r, %s', ids, msg)
+                raise CswError('UnicodeDecodeError: %r' % ids)
 
-        record["xml"] = '<?xml version="1.0" encoding="UTF-8"?>\n' + record["xml"]
+        try:
+            record["xml"] = (u'<?xml version="1.0" encoding="UTF-8"?>\n'
+                                         + record["xml"].decode('utf-8'))
+        except UnicodeDecodeError as msg:
+            log.error('Unicode Decode Error: %r, %s', ids, msg)
+            raise CswError('UnicodeDecodeError: %r' % ids)
+        
         record["tree"] = mdtree
         return record
