@@ -21,7 +21,7 @@ setup(
 	zip_safe=False,
 	install_requires=[
             'GeoAlchemy2==0.11.1',
-            'Shapely>=1.7',
+            'Shapely>=1.7,<2.0',
             'OWSLib>=0.21',
             'lxml>=2.3',
             'argparse',
