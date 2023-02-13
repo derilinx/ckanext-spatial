@@ -45,7 +45,7 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
     install_requires=[
         # -*- Extra requirements: -*-
             'GeoAlchemy2>=0.8.0',
-            'Shapely>=1.7',
+            'Shapely>=1.7,<2.0',
             'OWSLib>=0.21',
             'lxml>=2.3',
             'argparse',
