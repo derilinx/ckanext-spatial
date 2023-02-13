@@ -20,7 +20,7 @@ setup(
 	include_package_data=True,
 	zip_safe=False,
 	install_requires=[
-            'GeoAlchemy2>=0.8.0',
+            'GeoAlchemy2==0.11.1',
             'Shapely>=1.7',
             'OWSLib>=0.21',
             'lxml>=2.3',
