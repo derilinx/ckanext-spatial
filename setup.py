@@ -44,10 +44,14 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
-            'GeoAlchemy2>=0.8.0',
-            'Shapely>=1.7,<2.0',
-            'OWSLib>=0.21',
+            'Shapely==2.0.1',
+            'OWSLib>=0.28',
             'lxml>=2.3',
+            'geojson==3.0.1',
+            'ckantoolkit',
+            'six',
+            'pyproj==2.6.1; python_version < "3.9"',
+            'pyproj==3.4.1; python_version >="3.9"',
             'argparse',
             'pyparsing>=2.1.10',
             'requests<=3',
