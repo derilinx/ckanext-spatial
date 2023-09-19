@@ -99,7 +99,7 @@ def validate_bbox(bbox_values):
     if isinstance(bbox_values,str):
         bbox_values = bbox_values.split(',')
 
-    if len(bbox_values) is not 4:
+    if len(bbox_values) != 4:
         return None
 
     try:
