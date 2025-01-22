@@ -44,6 +44,7 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
     zip_safe=False,
     install_requires=[
         # -*- Extra requirements: -*-
+            'numpy>=1.26,<2',
             'Shapely==2.0.1',
             'OWSLib>=0.28',
             'lxml>=2.3',
