@@ -36,7 +36,7 @@ class SpatialSearchBackend:
     def shape_from_geometry(self, geometry):
         try:
             shape = shapely.geometry.shape(geometry)
-        except (GeometryError, AttributeError) as e:
+        except (*GeometryError, AttributeError) as e:
             log.error("{}, not indexing :: {}".format(e, json.dumps(geometry)[:100]))
             return None
 
