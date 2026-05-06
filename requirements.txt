@@ -6,7 +6,7 @@ requests>=1.1.0
 six
 
 pyproj==2.6.1; python_version < '3.9'
-pyproj==3.4.1; python_version >= '3.9'
+pyproj==3.6.1; python_version >= '3.9'
 
 # Compatibility with NumPy 2.0: https://github.com/shapely/shapely/issues/1972
 numpy>=1.26,<2

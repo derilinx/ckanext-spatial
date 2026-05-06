@@ -52,7 +52,7 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
             'ckantoolkit',
             'six',
             'pyproj==2.6.1; python_version < "3.9"',
-            'pyproj==3.4.1; python_version >="3.9"',
+            'pyproj==3.6.1; python_version >="3.9"',
             'argparse',
             'pyparsing>=2.1.10',
             'requests<=3',
