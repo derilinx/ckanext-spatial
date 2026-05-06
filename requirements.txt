@@ -10,7 +10,7 @@ pyproj==3.4.1; python_version >= '3.9'
 
 # Compatibility with NumPy 2.0: https://github.com/shapely/shapely/issues/1972
 numpy>=1.26,<2
-Shapely==2.0.1
+Shapely==2.0.7
 
 OWSLib==0.28.1
 geojson==3.0.1

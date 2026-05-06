@@ -45,7 +45,7 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
     install_requires=[
         # -*- Extra requirements: -*-
             'numpy>=1.26,<2',
-            'Shapely==2.0.1',
+            'Shapely==2.0.7',
             'OWSLib>=0.28',
             'lxml>=2.3',
             'geojson==3.0.1',
