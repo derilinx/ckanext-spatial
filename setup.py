@@ -48,7 +48,7 @@ https://docs.ckan.org/projects/ckanext-spatial/en/latest/
             'Shapely==2.0.7',
             'OWSLib>=0.28',
             'lxml>=2.3',
-            'geojson==3.0.1',
+            'geojson==3.1.0',
             'ckantoolkit',
             'six',
             'pyproj==2.6.1; python_version < "3.9"',
