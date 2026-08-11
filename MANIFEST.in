@@ -1,3 +1,6 @@
+# DLX custom: what to include
 graft ckanext
 include *.py
 include README.rst
+include requirements.txt
+include dev-requirements.txt
