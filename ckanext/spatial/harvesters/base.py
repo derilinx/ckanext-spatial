@@ -24,6 +24,7 @@ from ckan.lib.helpers import json
 from ckan import logic
 from ckan.lib.navl.validators import not_empty, unicode_safe
 from ckan.lib.search.index import PackageSearchIndex
+from ckan.lib.search.common import SearchIndexError
 from ckanext.harvest.harvesters.base import munge_tag
 
 from ckanext.harvest.harvesters.base import HarvesterBase
@@ -218,6 +219,8 @@ class SpatialHarvester(HarvesterBase):
                 if key in source_config_obj:
                     if not isinstance(source_config_obj[key],bool):
                         raise ValueError('%s must be boolean' % key)
+
+            self.force_import = bool(source_config_obj.get('force_import'))
 
         except ValueError as e:
             raise e
@@ -619,9 +622,49 @@ class SpatialHarvester(HarvesterBase):
         harvest_object.metadata_modified_date = metadata_modified_date
         harvest_object.add()
 
-
+        # import pdb; pdb.set_trace()
+        # breakpoint()
         # Build the package dict
         package_dict = self.get_package_dict(iso_values, harvest_object)
+        # breakpoint()
+        import ast
+        extras = package_dict.pop('extras')
+        extras_dict = {i['key'] : i['value'] for i in extras}
+        if not package_dict.get("language", False):
+            package_dict["language"] = 'en' if extras_dict['metadata-language'] == 'eng' else extras_dict['metadata-language']
+
+        package_dict['author'] = ast.literal_eval(extras_dict['responsible-party'])[0]['name']
+        package_dict['author_email'] = extras_dict['contact-email']
+        package_dict['spatial'] = extras_dict['spatial']
+        package_dict['srs'] = ["epsg:4326"]
+        package_dict['identifiers'] = [harvest_object.guid]
+        package_dict['stat_attributes'] = ""
+        package_dict['stat_dimensions'] = ""
+        package_dict['spatial_uri'] = ""
+        package_dict['notes_translated'] = {
+            'en': package_dict['notes'],
+            'mt': package_dict['notes']
+        }
+        package_dict['title_translated'] = {
+            'en': package_dict['title'],
+            'mt': package_dict['title']
+        }
+        package_dict['personal'] = "false"
+        for resource in package_dict['resources']:
+            resource['stat_type'] = "http://publications.europa.eu/resource/authority/distribution-type/WEB_SERVICE"
+        
+        extras_license = ast.literal_eval(extras_dict['licence'])
+        package_dict['license_id'] = "CC-BY-4.0" if not extras_license else extras_license[0]
+        # if iso_values.get('metadata-standard-name', None) == 'ISO 19119':
+
+        #     dataset_reference_date = ast.literal_eval(extras_dict['dataset-reference-date'])[0]
+        #     dataset_reference_date_dict = {i['type'] : i['value'] for i in dataset_reference_date}
+
+        #     package_dict['metadata_created'] = dataset_reference_date_dict['creation']
+        #     package_dict['metadata_modified'] = dataset_reference_date_dict['revision']
+        #     package_dict['issued'] = dataset_reference_date_dict['publication']
+
+            
         for harvester in p.PluginImplementations(ISpatialHarvester):
             package_dict = harvester.get_package_dict(context, {
                 'package_dict': package_dict,
@@ -706,8 +749,13 @@ class SpatialHarvester(HarvesterBase):
                             if extra['key'] == 'harvest_object_id':
                                 extra['value'] = harvest_object.id
                         if package_dict:
-                            package_index = PackageSearchIndex()
-                            package_index.index_package(package_dict)
+                            try:
+                                package_index = PackageSearchIndex()
+                                package_index.index_package(package_dict)
+                            except SearchIndexError as e:
+                                self._save_object_error(f"Couldn't index package: {e}", harvest_object)
+                                log.exception('While indexing package %s', package_dict['id'])
+                                return False
 
                 log.info('Document with GUID %s unchanged, skipping...' % (harvest_object.guid))
             else:
