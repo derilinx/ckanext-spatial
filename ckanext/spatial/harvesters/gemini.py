@@ -27,7 +27,7 @@ from ckan.lib.helpers import json
 
 from ckan import logic
 from ckan.logic import get_action, ValidationError
-from ckan.lib.navl.validators import not_empty
+from ckan.lib.navl.validators import not_empty, unicode_safe
 
 from ckanext.harvest.interfaces import IHarvester
 from ckanext.harvest.model import HarvestObject
@@ -90,7 +90,8 @@ class GeminiHarvester(SpatialHarvester):
         Some errors raise Exceptions.
         '''
         log = logging.getLogger(__name__ + '.import')
-        xml = etree.fromstring(gemini_string)
+        #xml = etree.fromstring(gemini_string)
+        xml = etree.fromstring(gemini_string.encode('utf-8'))
         valid, profile, errors = self._get_validator().is_valid(xml)
         if not valid:
             out = errors[0][0] + ':\n' + '\n'.join(e[0] for e in errors[1:])
@@ -467,7 +468,7 @@ class GeminiHarvester(SpatialHarvester):
             # We need to explicitly provide a package ID, otherwise ckanext-spatial
             # won't be be able to link the extent to the package.
             package_dict['id'] = str(uuid.uuid4())
-            package_schema['id'] = [str]
+            package_schema['id'] = [unicode_safe]
 
             action_function = get_action('package_create')
         else:
