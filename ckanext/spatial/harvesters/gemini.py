@@ -90,7 +90,8 @@ class GeminiHarvester(SpatialHarvester):
         Some errors raise Exceptions.
         '''
         log = logging.getLogger(__name__ + '.import')
-        xml = etree.fromstring(gemini_string)
+        #xml = etree.fromstring(gemini_string)
+        xml = etree.fromstring(gemini_string.encode('utf-8'))
         valid, profile, errors = self._get_validator().is_valid(xml)
         if not valid:
             out = errors[0][0] + ':\n' + '\n'.join(e[0] for e in errors[1:])
