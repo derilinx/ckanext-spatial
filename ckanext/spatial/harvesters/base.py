@@ -844,12 +844,15 @@ class SpatialHarvester(HarvesterBase):
 
         '''
         url = url.replace(' ', '%20')
-        response = requests.get(url, timeout=10)
+        proxy = config.get('ckan.download_proxy')
+        proxies = {'http': proxy, 'https': proxy} if proxy else None
+
+        response = requests.get(url, timeout=10, proxies=proxies)
 
         content = response.text
 
         # Remove original XML declaration
-        content = re.sub('<xml(.*)>', '', content)
+        content = re.sub(r"<\?xml(.*)\?>", "", content)
 
         # Get rid of the BOM and other rubbish at the beginning of the file
         content = re.sub('.*?<', '<', content, 1)
@@ -872,7 +875,7 @@ class SpatialHarvester(HarvesterBase):
         if not validator:
             validator = self._get_validator()
 
-        document_string = re.sub('<xml(.*)>', '', document_string)
+        document_string = re.sub(r"<\?xml(.*)\?>", "", document_string)
 
         try:
             xml = etree.fromstring(document_string)
